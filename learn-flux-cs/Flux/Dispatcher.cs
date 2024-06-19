@@ -16,7 +16,7 @@ public class Dispatcher<TPayload>
         var id = Guid.NewGuid();
         callbacks.Add( id, callback );
 
-        return new DispatchToken( this, id );
+        return new CallbackSubscriptionToken( this, id );
     }
 
     public async Task DispatchAsync( TPayload payload )
@@ -31,13 +31,13 @@ public class Dispatcher<TPayload>
         await Task.WhenAll( tasks );
     }
 
-    private class DispatchToken : IDisposable
+    private class CallbackSubscriptionToken : IDisposable
     {
         private readonly Dispatcher<TPayload> dispatcher;
         private readonly Guid id;
 
         // ReSharper disable once ConvertToPrimaryConstructor
-        public DispatchToken( Dispatcher<TPayload> dispatcher, Guid id )
+        public CallbackSubscriptionToken( Dispatcher<TPayload> dispatcher, Guid id )
         {
             this.dispatcher = dispatcher;
             this.id         = id;
