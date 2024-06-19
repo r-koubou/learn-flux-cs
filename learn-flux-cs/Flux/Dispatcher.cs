@@ -6,12 +6,12 @@ namespace LearnFlux.Flux;
 
 public class Dispatcher<TPayload>
 {
-    private readonly Dictionary<Guid, IPayloadReceiver<TPayload>> callbacks = new();
+    private readonly Dictionary<Guid, Func<TPayload, Task>> callbacks = new();
 
     public int SubscriberCount
         => callbacks.Count;
 
-    public IDisposable Register( IPayloadReceiver<TPayload> callback )
+    public IDisposable Register( Func<TPayload, Task> callback )
     {
         var id = Guid.NewGuid();
         callbacks.Add( id, callback );
@@ -25,7 +25,7 @@ public class Dispatcher<TPayload>
 
         foreach( var callback in callbacks.Values )
         {
-            tasks.Add( callback.ReceiveAsync( payload ) );
+            tasks.Add( callback( payload ) );
         }
 
         await Task.WhenAll( tasks );

@@ -1,3 +1,4 @@
+using System;
 using System.Threading.Tasks;
 
 using LearnFlux.Flux;
@@ -13,13 +14,16 @@ public class FluxCoreTest
     public void Dispatcherに購読と解除ができる()
     {
         var dispatcher = new Dispatcher<string>();
-        var receiver = new MockPayloadReceiver<string>();
 
-        using( dispatcher.Register( receiver ) )
-        {
-            Assert.AreEqual( 1, dispatcher.SubscriberCount );
-        }
+        var token = dispatcher.Register( async _ =>
+            {
+                await Task.CompletedTask;
+            }
+        );
 
+        Assert.AreEqual( 1, dispatcher.SubscriberCount );
+
+        token.Dispose();
         Assert.AreEqual( 0, dispatcher.SubscriberCount );
     }
 
@@ -27,14 +31,20 @@ public class FluxCoreTest
     public async Task DispatcherからPayloadを受信できる()
     {
         var dispatcher = new Dispatcher<string>();
-        var receiver = new MockPayloadReceiver<string>();
 
         const string payload = "Hello, world!";
+        var receivedPayload = "";
 
-        using( dispatcher.Register( receiver ) )
-        {
-            await dispatcher.DispatchAsync( payload );
-            Assert.AreEqual( payload, receiver.ReceivedPayload );
-        }
+        var token = dispatcher.Register( p =>
+            {
+                receivedPayload = p;
+                return Task.CompletedTask;
+            }
+        );
+
+        await dispatcher.DispatchAsync( payload );
+        Assert.AreEqual( payload, receivedPayload );
+
+        token.Dispose();
     }
 }
