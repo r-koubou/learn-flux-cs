@@ -21,10 +21,10 @@ public class FluxCoreTest
             }
         );
 
-        Assert.AreEqual( 1, dispatcher.SubscriberCount );
+        Assert.AreEqual( 1, dispatcher.RegisteredCount );
 
         token.Dispose();
-        Assert.AreEqual( 0, dispatcher.SubscriberCount );
+        Assert.AreEqual( 0, dispatcher.RegisteredCount );
     }
 
     [Test]

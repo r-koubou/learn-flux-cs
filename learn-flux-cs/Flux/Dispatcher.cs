@@ -4,11 +4,11 @@ using System.Threading.Tasks;
 
 namespace LearnFlux.Flux;
 
-public class Dispatcher<TPayload>
+public class Dispatcher<TPayload> : IDispatcher<TPayload>
 {
     private readonly Dictionary<Guid, Func<TPayload, Task>> callbacks = new();
 
-    public int SubscriberCount
+    public int RegisteredCount
         => callbacks.Count;
 
     public IDisposable Register( Func<TPayload, Task> callback )
