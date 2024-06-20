@@ -1,0 +1,28 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Flux", "learn-flux-cs\Flux\Flux.csproj", "{DAEAF843-A59D-40EC-8031-ABBF69A1DABF}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Flux", "Flux", "{390EC1FF-F12F-47E5-8FE0-7C10B0DFD595}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Flux.Test", "learn-flux-cs\Flux.Tests\Flux.Test.csproj", "{09548ADB-62E3-4E1E-A563-45D56BABD888}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{DAEAF843-A59D-40EC-8031-ABBF69A1DABF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{DAEAF843-A59D-40EC-8031-ABBF69A1DABF}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{DAEAF843-A59D-40EC-8031-ABBF69A1DABF}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{DAEAF843-A59D-40EC-8031-ABBF69A1DABF}.Release|Any CPU.Build.0 = Release|Any CPU
+		{09548ADB-62E3-4E1E-A563-45D56BABD888}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{09548ADB-62E3-4E1E-A563-45D56BABD888}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{09548ADB-62E3-4E1E-A563-45D56BABD888}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{09548ADB-62E3-4E1E-A563-45D56BABD888}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{DAEAF843-A59D-40EC-8031-ABBF69A1DABF} = {390EC1FF-F12F-47E5-8FE0-7C10B0DFD595}
+		{09548ADB-62E3-4E1E-A563-45D56BABD888} = {390EC1FF-F12F-47E5-8FE0-7C10B0DFD595}
+	EndGlobalSection
+EndGlobal
