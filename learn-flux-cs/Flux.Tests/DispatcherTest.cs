@@ -8,7 +8,7 @@ using NUnit.Framework;
 namespace FluxLearn.FLux.Test;
 
 [TestFixture]
-public class FluxCoreTest
+public class DispatcherTest
 {
     [Test]
     public void Dispatcherに購読と解除ができる()
