@@ -8,7 +8,7 @@ namespace LearnFlux.Flux;
 /// </summary>
 /// <remarks>
 /// <see cref="HandleDispatcherAsync"/> で Dispatcher からのコールバックをハンドリングする、という基本的な処理を提供する。
-/// View への通知やデータ更新方法の方針は、このStoreクラスの具象クラスで決定・実装をする。
+/// View への通知やデータ更新方法の方針は、このStoreクラスでは定義せずにの具象クラスで決定・実装をする。
 /// </remarks>
 public abstract class Store<TPayload> : IDisposable
 {
