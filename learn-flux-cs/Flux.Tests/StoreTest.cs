@@ -101,6 +101,7 @@ public class StoreTest
 
     }
 
+    #region Store のモック実装
     private enum MockEventType
     {
         Hello,
@@ -168,4 +169,5 @@ public class StoreTest
             }
         }
     }
+    #endregion ~Store のモック実装
 }
