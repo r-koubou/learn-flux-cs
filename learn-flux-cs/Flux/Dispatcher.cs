@@ -25,10 +25,22 @@ public class Dispatcher<TPayload> : IDispatcher<TPayload>
 
         foreach( var callback in callbacks.Values )
         {
-            tasks.Add( callback( payload ) );
+            tasks.Add( ExecuteCallbackAsync( callback, payload ) );
         }
 
         await Task.WhenAll( tasks );
+    }
+
+    private static async Task ExecuteCallbackAsync( Func<TPayload, Task> callback, TPayload payload )
+    {
+        try
+        {
+            await callback( payload );
+        }
+        catch
+        {
+            // ignored
+        }
     }
 
     private class CallbackSubscriptionToken : IDisposable
