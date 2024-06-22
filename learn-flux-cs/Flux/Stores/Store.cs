@@ -4,7 +4,7 @@ using System.Threading.Tasks;
 using LearnFlux.Flux.Dispatchers;
 using LearnFlux.Flux.Dispatchers.Extensions;
 
-namespace LearnFlux.Flux;
+namespace LearnFlux.Flux.Stores;
 
 /// <summary>
 /// Storeを表す基底クラス。
