@@ -6,15 +6,12 @@ namespace LearnFlux.Flux.Dispatchers;
 
 public class Dispatcher<TPayload> : IDispatcher<TPayload>
 {
-    private readonly Dictionary<Guid, Func<TPayload, Task>> callbacks = new();
+    private readonly Dictionary<Guid, IDispatchHandler<TPayload>> handlers = new();
 
-    public int RegisteredCount
-        => callbacks.Count;
-
-    public IDisposable Register( Func<TPayload, Task> callback )
+    public IDisposable AddHandler( IDispatchHandler<TPayload> handler )
     {
         var id = Guid.NewGuid();
-        callbacks.Add( id, callback );
+        handlers.Add( id, handler );
 
         return new CallbackSubscriptionToken( this, id );
     }
@@ -23,29 +20,22 @@ public class Dispatcher<TPayload> : IDispatcher<TPayload>
     {
         var tasks = new List<Task>();
 
-        foreach( var callback in callbacks.Values )
+        foreach( var callback in handlers.Values )
         {
-            tasks.Add( callback( payload ) );
+            tasks.Add( callback.HandleAsync( payload ) );
         }
 
         await Task.WhenAll( tasks );
     }
 
-    private class CallbackSubscriptionToken : IDisposable
+    private class CallbackSubscriptionToken( Dispatcher<TPayload> dispatcher, Guid id ) : IDisposable
     {
-        private readonly Dispatcher<TPayload> dispatcher;
-        private readonly Guid id;
-
-        // ReSharper disable once ConvertToPrimaryConstructor
-        public CallbackSubscriptionToken( Dispatcher<TPayload> dispatcher, Guid id )
-        {
-            this.dispatcher = dispatcher;
-            this.id         = id;
-        }
+        private readonly Dispatcher<TPayload> dispatcher = dispatcher;
+        private readonly Guid id = id;
 
         public void Dispose()
         {
-            dispatcher.callbacks.Remove( id );
+            dispatcher.handlers.Remove( id );
         }
     }
 }

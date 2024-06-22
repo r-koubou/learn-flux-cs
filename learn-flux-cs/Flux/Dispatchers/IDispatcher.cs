@@ -5,8 +5,7 @@ namespace LearnFlux.Flux.Dispatchers;
 
 public interface IDispatcher<TPayload>
 {
-    int RegisteredCount { get; }
-    IDisposable Register( Func<TPayload, Task> callback );
+    IDisposable AddHandler( IDispatchHandler<TPayload> handler );
     void Dispatch( TPayload payload )
         => DispatchAsync( payload ).GetAwaiter().GetResult();
     Task DispatchAsync( TPayload payload );
