@@ -1,8 +1,7 @@
-using System;
 using System.Threading.Tasks;
 
-using LearnFlux.Flux;
 using LearnFlux.Flux.Dispatchers;
+using LearnFlux.Flux.Dispatchers.Extensions;
 
 using NUnit.Framework;
 
@@ -12,23 +11,6 @@ namespace FluxLearn.FLux.Test;
 public class DispatcherTest
 {
     [Test]
-    public void Dispatcherに購読と解除ができる()
-    {
-        var dispatcher = new Dispatcher<string>();
-
-        var token = dispatcher.Register( async _ =>
-            {
-                await Task.CompletedTask;
-            }
-        );
-
-        Assert.AreEqual( 1, dispatcher.RegisteredCount );
-
-        token.Dispose();
-        Assert.AreEqual( 0, dispatcher.RegisteredCount );
-    }
-
-    [Test]
     public async Task DispatcherからPayloadを受信できる()
     {
         var dispatcher = new Dispatcher<string>();
@@ -36,10 +18,10 @@ public class DispatcherTest
         const string payload = "Hello, world!";
         var receivedPayload = "";
 
-        var token = dispatcher.Register( p =>
+        var token = dispatcher.AddHandler( async p =>
             {
                 receivedPayload = p;
-                return Task.CompletedTask;
+                await Task.CompletedTask;
             }
         );
 
