@@ -115,14 +115,9 @@ public class StoreTest
         public string Message { get; } = message;
     }
 
-    private class MockStore : Store<MockPayload>
+    private class MockStore( IDispatcher<MockPayload> dispatcher ) : Store<MockPayload>( dispatcher )
     {
         private readonly Dictionary<MockEventType, Func<MockPayload, Task>> bindings = new();
-
-        // ReSharper disable once ConvertToPrimaryConstructor
-        public MockStore( IDispatcher<MockPayload> dispatcher ) : base( dispatcher )
-        {
-        }
 
         protected override async Task HandleDispatcherAsync( MockPayload payload )
         {
@@ -152,17 +147,10 @@ public class StoreTest
             return new BindToken( bindings, type );
         }
 
-        private class BindToken : IDisposable
+        private class BindToken( Dictionary<MockEventType, Func<MockPayload, Task>> bindings, MockEventType type ) : IDisposable
         {
-            private readonly Dictionary<MockEventType, Func<MockPayload, Task>> bindings;
-            private readonly MockEventType type;
-
-            // ReSharper disable once ConvertToPrimaryConstructor
-            public BindToken( Dictionary<MockEventType, Func<MockPayload, Task>> bindings, MockEventType type )
-            {
-                this.bindings = bindings;
-                this.type     = type;
-            }
+            private readonly Dictionary<MockEventType, Func<MockPayload, Task>> bindings = bindings;
+            private readonly MockEventType type = type;
 
             public void Dispose()
             {
