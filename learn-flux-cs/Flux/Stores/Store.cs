@@ -9,11 +9,10 @@ namespace LearnFlux.Flux.Stores;
 /// <summary>
 /// Storeを表す基底クラス。
 /// </summary>
-/// <remarks>
-/// <see cref="HandleDispatcherAsync"/> で Dispatcher からのコールバックをハンドリングする、という基本的な処理を提供する。
-/// View への通知やデータ更新方法の方針は、このStoreクラスでは定義せずにの具象クラスで決定・実装をする。
-/// </remarks>
-public abstract class Store<TPayload> : IDisposable
+public abstract class Store<TPayloadKey, TPayload>
+    : IDisposable,
+      IDispatchHandler<TPayload>,
+      IStoreBinder<TPayloadKey, TPayload>
 {
     private readonly IDisposable dispatcherToken;
 
@@ -21,17 +20,27 @@ public abstract class Store<TPayload> : IDisposable
     protected Store( IDispatcher<TPayload> dispatcher )
     {
         // Dispatcher からのコールバック登録
-        dispatcherToken = dispatcher.AddHandler( HandleDispatcherAsync );
+        dispatcherToken = dispatcher.AddHandler( async payload => await HandleAsync( payload ) );
     }
 
+    #region IDispatchHandler<TPayload>
     /// <summary>
     /// <see cref="IDispatcher{TPayload}"/> からのコールバックをハンドリングする。
     /// </summary>
     /// <remarks>
     /// 適宜データ更新や View への通知を行う。
     /// </remarks>
-    protected abstract Task HandleDispatcherAsync( TPayload payload );
+    public abstract Task HandleAsync( TPayload payload );
+    #endregion ~IDispatchHandler<TPayload>
 
+    #region IStoreBinder<TPayloadKey, TPayload>
+    ///
+    /// <inheritdoc />
+    ///
+    public abstract IDisposable Bind( TPayloadKey key, IStoreUpdateListener<TPayload> callback );
+    #endregion ~IStoreBinder<TPayloadKey, TPayload>
+
+    #region IDisposable
     ///
     /// <inheritdoc />
     ///
@@ -40,4 +49,5 @@ public abstract class Store<TPayload> : IDisposable
         // Dispatcher からの登録解除
         dispatcherToken.Dispose();
     }
+    #endregion ~IDisposable
 }

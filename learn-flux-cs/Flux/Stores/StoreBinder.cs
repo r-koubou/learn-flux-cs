@@ -7,12 +7,23 @@ public sealed class StoreBinder<TBindKey, TPayload> : IStoreBinder<TBindKey, TPa
 {
     private readonly Dictionary<TBindKey, List<IStoreUpdateListener<TPayload>>> bindings = new();
 
+
+    public IEnumerable<IStoreUpdateListener<TPayload>> GetListeners( TBindKey key )
+    {
+        if( bindings.TryGetValue( key, out var listeners ) )
+        {
+            return listeners;
+        }
+
+        return Array.Empty<IStoreUpdateListener<TPayload>>();
+    }
+
     public IDisposable Bind( TBindKey key, IStoreUpdateListener<TPayload> callback )
     {
         if( !bindings.TryGetValue( key, out var listeners ) )
         {
             listeners = [];
-            bindings.Add( key, [] );
+            bindings[ key ] = listeners;
         }
 
         if( listeners.Contains( callback ) )
@@ -44,10 +55,8 @@ public sealed class StoreBinder<TBindKey, TPayload> : IStoreBinder<TBindKey, TPa
             if( bindings.TryGetValue( key, out var listeners ) )
             {
                 listeners.Remove( listener );
+                bindings[ key ] = listeners;
             }
         }
     }
 }
-
-
-public class DispatcherHandler : IDis
