@@ -2,6 +2,7 @@ using System;
 using System.Threading.Tasks;
 
 using LearnFlux.Flux;
+using LearnFlux.Flux.Dispatchers;
 
 using NUnit.Framework;
 

@@ -1,7 +1,7 @@
 using System;
 using System.Threading.Tasks;
 
-namespace LearnFlux.Flux;
+namespace LearnFlux.Flux.Dispatchers;
 
 public interface IDispatcher<TPayload>
 {

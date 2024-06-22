@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
-namespace LearnFlux.Flux;
+namespace LearnFlux.Flux.Dispatchers;
 
 public class Dispatcher<TPayload> : IDispatcher<TPayload>
 {
