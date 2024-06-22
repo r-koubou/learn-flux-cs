@@ -1,6 +1,9 @@
 using System;
 using System.Threading.Tasks;
 
+using LearnFlux.Flux.Dispatchers;
+using LearnFlux.Flux.Dispatchers.Extensions;
+
 namespace LearnFlux.Flux;
 
 /// <summary>
@@ -18,7 +21,7 @@ public abstract class Store<TPayload> : IDisposable
     protected Store( IDispatcher<TPayload> dispatcher )
     {
         // Dispatcher からのコールバック登録
-        dispatcherToken = dispatcher.Register( HandleDispatcherAsync );
+        dispatcherToken = dispatcher.AddHandler( HandleDispatcherAsync );
     }
 
     /// <summary>
