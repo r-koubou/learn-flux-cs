@@ -30,13 +30,16 @@ public abstract class Store<TPayloadKey, TPayload>
     }
 
     #region IDispatchHandler<TPayload>
+
     ///
     /// <inheritdoc />
     ///
     public abstract Task HandleAsync( TPayload payload );
+
     #endregion ~IDispatchHandler<TPayload>
 
     #region IStoreBinder<TPayloadKey, TPayload>
+
     ///
     /// <inheritdoc />
     ///
@@ -48,9 +51,11 @@ public abstract class Store<TPayloadKey, TPayload>
     ///
     public IEnumerable<IStoreUpdateListener<TPayload>> ListenersOf( TPayloadKey key )
         => throw new NotImplementedException();
+
     #endregion ~IStoreBinder<TPayloadKey, TPayload>
 
     #region IDisposable
+
     ///
     /// <inheritdoc />
     ///
@@ -59,5 +64,6 @@ public abstract class Store<TPayloadKey, TPayload>
         // Dispatcher からの登録解除
         dispatcherToken.Dispose();
     }
+
     #endregion ~IDisposable
 }

@@ -18,7 +18,7 @@ public sealed class StoreBinder<TBindKey, TPayload> : IStoreBinder<TBindKey, TPa
     {
         if( !bindings.TryGetValue( key, out var listeners ) )
         {
-            listeners = [];
+            listeners       = [];
             bindings[ key ] = listeners;
         }
 

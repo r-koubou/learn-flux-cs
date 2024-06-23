@@ -6,5 +6,6 @@ public interface IStoreUpdateListener<in TPayload>
 {
     void OnStoreUpdated( TPayload payload )
         => OnStoreUpdatedAsync( payload ).GetAwaiter().GetResult();
+
     Task OnStoreUpdatedAsync( TPayload payload );
 }
