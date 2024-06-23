@@ -14,30 +14,30 @@ public sealed class StoreBinder<TBindKey, TPayload> : IStoreBinder<TBindKey, TPa
     ///
     /// <inheritdoc />
     ///
-    public IDisposable Bind( TBindKey key, IStoreUpdateListener<TPayload> listener )
+    public IDisposable Bind( TBindKey actionType, IStoreUpdateListener<TPayload> listener )
     {
-        if( !bindings.TryGetValue( key, out var listeners ) )
+        if( !bindings.TryGetValue( actionType, out var listeners ) )
         {
             listeners       = [];
-            bindings[ key ] = listeners;
+            bindings[ actionType ] = listeners;
         }
 
         if( listeners.Contains( listener ) )
         {
-            throw new InvalidOperationException( $"{key} is already bound" );
+            throw new InvalidOperationException( $"{actionType} is already bound" );
         }
 
         listeners.Add( listener );
 
-        return new BindToken( bindings, key, listener );
+        return new BindToken( bindings, actionType, listener );
     }
 
     ///
     /// <inheritdoc />
     ///
-    public IEnumerable<IStoreUpdateListener<TPayload>> ListenersOf( TBindKey key )
+    public IEnumerable<IStoreUpdateListener<TPayload>> ListenersOf( TBindKey actionType )
     {
-        if( bindings.TryGetValue( key, out var listeners ) )
+        if( bindings.TryGetValue( actionType, out var listeners ) )
         {
             return listeners;
         }

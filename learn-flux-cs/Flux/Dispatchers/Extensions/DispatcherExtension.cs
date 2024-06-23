@@ -1,6 +1,8 @@
 using System;
 using System.Threading.Tasks;
 
+using LearnFlux.Flux.Actions;
+
 namespace LearnFlux.Flux.Dispatchers.Extensions;
 
 /// <summary>
@@ -11,6 +13,6 @@ public static class DispatcherExtension
     /// <summary>
     /// Func・ラムダ式を利用してハンドラを登録する
     /// </summary>
-    public static IDisposable AddHandler<TPayload>( this IDispatcher<TPayload> me, Func<TPayload, Task> handlerAsync )
-        => me.AddHandler( new AnonymousHandler<TPayload>( handlerAsync ) );
+    public static IDisposable AddHandler<TAction>( this IDispatcher<TAction> me, Func<TAction, Task> handlerAsync ) where TAction : IFluxAction
+        => me.AddHandler( new AnonymousHandler<TAction>( handlerAsync ) );
 }
