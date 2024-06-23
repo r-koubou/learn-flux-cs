@@ -130,7 +130,7 @@ public class StoreTest
 
                 foreach( var listener in StoreBinder.ListenersOf( payload.Type ) )
                 {
-                    tasks.Add( listener.OnStoreUpdatedAsync( payload ) );
+                    tasks.Add( listener.OnValueUpdatedAsync( payload ) );
                 }
 
                 await Task.WhenAll( tasks );
