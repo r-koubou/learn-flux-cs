@@ -37,7 +37,7 @@ public abstract class Store<TPayloadKey, TPayload>
     ///
     /// <inheritdoc />
     ///
-    public abstract IDisposable Bind( TPayloadKey key, IStoreUpdateListener<TPayload> callback );
+    public abstract IDisposable Bind( TPayloadKey key, IStoreUpdateListener<TPayload> listener );
     #endregion ~IStoreBinder<TPayloadKey, TPayload>
 
     #region IDisposable

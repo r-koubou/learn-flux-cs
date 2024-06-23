@@ -3,22 +3,18 @@ using System.Collections.Generic;
 
 namespace LearnFlux.Flux.Stores;
 
+/// <summary>
+/// デフォルトの <see cref="IStoreBinder{TBindKey, TPayload}"/> 実装
+/// </summary>
+/// <seealso cref="IStoreBinder{TBindKey, TPayload}" />
 public sealed class StoreBinder<TBindKey, TPayload> : IStoreBinder<TBindKey, TPayload>
 {
     private readonly Dictionary<TBindKey, List<IStoreUpdateListener<TPayload>>> bindings = new();
 
-
-    public IEnumerable<IStoreUpdateListener<TPayload>> GetListeners( TBindKey key )
-    {
-        if( bindings.TryGetValue( key, out var listeners ) )
-        {
-            return listeners;
-        }
-
-        return Array.Empty<IStoreUpdateListener<TPayload>>();
-    }
-
-    public IDisposable Bind( TBindKey key, IStoreUpdateListener<TPayload> callback )
+    ///
+    /// <inheritdoc />
+    ///
+    public IDisposable Bind( TBindKey key, IStoreUpdateListener<TPayload> listener )
     {
         if( !bindings.TryGetValue( key, out var listeners ) )
         {
@@ -26,14 +22,27 @@ public sealed class StoreBinder<TBindKey, TPayload> : IStoreBinder<TBindKey, TPa
             bindings[ key ] = listeners;
         }
 
-        if( listeners.Contains( callback ) )
+        if( listeners.Contains( listener ) )
         {
             throw new InvalidOperationException( $"{key} is already bound" );
         }
 
-        listeners.Add( callback );
+        listeners.Add( listener );
 
-        return new BindToken( bindings, key, callback );
+        return new BindToken( bindings, key, listener );
+    }
+
+    ///
+    /// <inheritdoc />
+    ///
+    public IEnumerable<IStoreUpdateListener<TPayload>> ListenersOf( TBindKey key )
+    {
+        if( bindings.TryGetValue( key, out var listeners ) )
+        {
+            return listeners;
+        }
+
+        return Array.Empty<IStoreUpdateListener<TPayload>>();
     }
 
     private class BindToken : IDisposable
