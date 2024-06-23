@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 
 using LearnFlux.Flux.Dispatchers;
@@ -16,6 +17,11 @@ public abstract class Store<TPayloadKey, TPayload>
 {
     private readonly IDisposable dispatcherToken;
 
+    /// <summary>
+    /// この Store が管理する IStoreBinder インスタンス
+    /// </summary>
+    protected virtual IStoreBinder<TPayloadKey, TPayload> StoreBinder { get; } = new StoreBinder<TPayloadKey, TPayload>();
+
     // ReSharper disable once ConvertToPrimaryConstructor
     protected Store( IDispatcher<TPayload> dispatcher )
     {
@@ -24,12 +30,9 @@ public abstract class Store<TPayloadKey, TPayload>
     }
 
     #region IDispatchHandler<TPayload>
-    /// <summary>
-    /// <see cref="IDispatcher{TPayload}"/> からのコールバックをハンドリングする。
-    /// </summary>
-    /// <remarks>
-    /// 適宜データ更新や View への通知を行う。
-    /// </remarks>
+    ///
+    /// <inheritdoc />
+    ///
     public abstract Task HandleAsync( TPayload payload );
     #endregion ~IDispatchHandler<TPayload>
 
@@ -37,7 +40,14 @@ public abstract class Store<TPayloadKey, TPayload>
     ///
     /// <inheritdoc />
     ///
-    public abstract IDisposable Bind( TPayloadKey key, IStoreUpdateListener<TPayload> listener );
+    public virtual IDisposable Bind( TPayloadKey key, IStoreUpdateListener<TPayload> listener )
+        => StoreBinder.Bind( key, listener );
+
+    ///
+    /// <inheritdoc />
+    ///
+    public IEnumerable<IStoreUpdateListener<TPayload>> ListenersOf( TPayloadKey key )
+        => throw new NotImplementedException();
     #endregion ~IStoreBinder<TPayloadKey, TPayload>
 
     #region IDisposable

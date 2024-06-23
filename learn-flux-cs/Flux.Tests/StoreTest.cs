@@ -122,18 +122,13 @@ public class StoreTest
 
     private class MockStore( IDispatcher<MockPayload> dispatcher ) : Store<MockEventType, MockPayload>( dispatcher )
     {
-        private readonly StoreBinder<MockEventType, MockPayload> binder = new();
-
-        public override IDisposable Bind( MockEventType key, IStoreUpdateListener<MockPayload> listener )
-            => binder.Bind( key, listener );
-
         public override async Task HandleAsync( MockPayload payload )
         {
             try
             {
                 var tasks = new List<Task>();
 
-                foreach( var listener in binder.ListenersOf( payload.Type ) )
+                foreach( var listener in StoreBinder.ListenersOf( payload.Type ) )
                 {
                     tasks.Add( listener.OnStoreUpdatedAsync( payload ) );
                 }
