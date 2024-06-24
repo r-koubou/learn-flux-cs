@@ -2,7 +2,9 @@ using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
+using LearnFlux.Flux.Actions;
 using LearnFlux.Flux.Dispatchers;
+using LearnFlux.Flux.Dispatchers.Extensions;
 using LearnFlux.Flux.Stores;
 using LearnFlux.Flux.Stores.Extensions;
 
@@ -13,15 +15,17 @@ namespace FluxLearn.FLux.Test;
 [TestFixture]
 public class StoreTest
 {
-
     [Test]
     public async Task バインドしてDispatcherからペイロードを受信できる()
     {
-        var dispatcher = new Dispatcher<MockPayload>();
-        var store     = new MockStore( dispatcher );
+        var dispatcher = new Dispatcher<MockAction>();
+        var store = new MockStore( dispatcher );
 
-        var hello = new MockPayload( MockEventType.Hello, "Hello, world!" );
-        var goodbye = new MockPayload( MockEventType.Goodbye, "Goodbye, world!" );
+        var hello = new MockPayload( "Hello, world!" );
+        var goodbye = new MockPayload( "Goodbye, world!" );
+
+        var helloAction = new MockAction( MockEventType.Hello, hello );
+        var goodbyeAction = new MockAction( MockEventType.Goodbye, goodbye );
 
         var helloReceived = false;
         var goodbyeReceived = false;
@@ -42,10 +46,10 @@ public class StoreTest
             }
         );
 
-        await dispatcher.DispatchAsync( hello );
+        await dispatcher.DispatchAsync( helloAction );
         Assert.IsTrue( helloReceived );
 
-        await dispatcher.DispatchAsync( goodbye );
+        await dispatcher.DispatchAsync( goodbyeAction );
         Assert.IsTrue( goodbyeReceived );
 
         helloToken.Dispose();
@@ -55,10 +59,12 @@ public class StoreTest
     [Test]
     public async Task バインドを解除してDispatcherからペイロードを受信できない()
     {
-        var dispatcher = new Dispatcher<MockPayload>();
-        var store     = new MockStore( dispatcher );
+        var dispatcher = new Dispatcher<MockAction>();
+        var store = new MockStore( dispatcher );
 
-        var hello = new MockPayload( MockEventType.Hello, "Hello, world!" );
+        var hello = new MockPayload( "Hello, world!" );
+        var helloAction = new MockAction( MockEventType.Hello, hello );
+
         var helloReceived = false;
 
         var helloToken = store.Bind( MockEventType.Hello, async payload =>
@@ -69,21 +75,21 @@ public class StoreTest
             }
         );
 
-        await dispatcher.DispatchAsync( hello );
+        await dispatcher.DispatchAsync( helloAction );
         Assert.IsTrue( helloReceived );
 
         helloToken.Dispose();
         helloReceived = false;
 
-        await dispatcher.DispatchAsync( hello );
+        await dispatcher.DispatchAsync( helloAction );
         Assert.IsFalse( helloReceived );
     }
 
     [Test]
     public void 同じ参照のリスナーを多重バインドしようとしたら例外がスローされる()
     {
-        var dispatcher = new Dispatcher<MockPayload>();
-        var store     = new MockStore( dispatcher );
+        var dispatcher = new Dispatcher<MockAction>();
+        var store = new MockStore( dispatcher );
 
         async Task Callback( MockPayload _ )
             => await Task.CompletedTask;
@@ -97,8 +103,8 @@ public class StoreTest
     [Test]
     public void Funcを用いて匿名リスナーを多重バインドしたはスローされない()
     {
-        var dispatcher = new Dispatcher<MockPayload>();
-        var store     = new MockStore( dispatcher );
+        var dispatcher = new Dispatcher<MockAction>();
+        var store = new MockStore( dispatcher );
 
         async Task Callback( MockPayload _ )
             => await Task.CompletedTask;
@@ -108,29 +114,43 @@ public class StoreTest
     }
 
     #region Store のモック実装
+
     private enum MockEventType
     {
         Hello,
         Goodbye
     }
 
-    private class MockPayload( MockEventType type, string message )
+    private class MockAction( MockEventType type, MockPayload payload, Exception? error = null )
+        : FluxAction<MockEventType, MockPayload>( type, payload, error ) {}
+
+    private class MockPayload( string message )
     {
-        public MockEventType Type { get; } = type;
         public string Message { get; } = message;
     }
 
-    private class MockStore( IDispatcher<MockPayload> dispatcher ) : Store<MockEventType, MockPayload>( dispatcher )
+    private class MockStore :
+        IDisposable,
+        IDispatchHandler<MockAction>,
+        IStoreBinder<MockEventType, MockPayload>
     {
-        public override async Task HandleAsync( MockPayload payload )
+        private IDisposable? dispatcherToken;
+        private readonly StoreBinder<MockEventType, MockPayload> storeBinder = new();
+
+        public MockStore( IDispatcher<MockAction> dispatcher )
+        {
+            dispatcherToken = dispatcher.AddHandler( async action => await HandleAsync( action ) );
+        }
+
+        public async Task HandleAsync( MockAction action )
         {
             try
             {
                 var tasks = new List<Task>();
 
-                foreach( var listener in StoreBinder.ListenersOf( payload.Type ) )
+                foreach( var listener in storeBinder.ListenersOf( action.Type ) )
                 {
-                    tasks.Add( listener.OnValueUpdatedAsync( payload ) );
+                    tasks.Add( listener.OnValueUpdatedAsync( action.Payload ) );
                 }
 
                 await Task.WhenAll( tasks );
@@ -140,6 +160,19 @@ public class StoreTest
                 // ignored
             }
         }
+
+        public IDisposable Bind( MockEventType actionType, IStoreUpdateListener<MockPayload> listener )
+            => storeBinder.Bind( actionType, listener );
+
+        public IEnumerable<IStoreUpdateListener<MockPayload>> ListenersOf( MockEventType actionType )
+            => storeBinder.ListenersOf( actionType );
+
+        public void Dispose()
+        {
+            dispatcherToken?.Dispose();
+            dispatcherToken = null;
+        }
     }
+
     #endregion ~Store のモック実装
 }
