@@ -5,7 +5,6 @@ using System.Threading.Tasks;
 using LearnFlux.Flux.Actions;
 using LearnFlux.Flux.Dispatchers;
 using LearnFlux.Flux.Stores;
-using LearnFlux.Flux.Stores.Extensions;
 
 using NUnit.Framework;
 
@@ -29,7 +28,7 @@ public class StoreTest
         var helloReceived = false;
         var goodbyeReceived = false;
 
-        var helloToken = store.Bind( MockEventType.Hello, async payload =>
+        var helloToken = store.Bind<MockEventType, MockPayload>( MockEventType.Hello, async payload =>
             {
                 helloReceived = true;
                 Assert.AreEqual( hello.Message, payload.Message );
@@ -37,7 +36,7 @@ public class StoreTest
             }
         );
 
-        var goodByeToken = store.Bind( MockEventType.Goodbye, async payload =>
+        var goodByeToken = store.Bind<MockEventType, MockPayload>( MockEventType.Goodbye, async payload =>
             {
                 goodbyeReceived = true;
                 Assert.AreEqual( goodbye.Message, payload.Message );
@@ -66,7 +65,7 @@ public class StoreTest
 
         var helloReceived = false;
 
-        var helloToken = store.Bind( MockEventType.Hello, async payload =>
+        var helloToken = store.Bind<MockEventType, MockPayload>( MockEventType.Hello, async payload =>
             {
                 helloReceived = true;
                 Assert.AreEqual( hello.Message, payload.Message );
@@ -90,26 +89,10 @@ public class StoreTest
         var dispatcher = new Dispatcher();
         var store = new MockStore( dispatcher );
 
-        async Task Callback( MockPayload _ )
-            => await Task.CompletedTask;
+        var callback = new Func<MockPayload, Task>( async _ => await Task.CompletedTask );
 
-        IStoreUpdateListener<MockPayload> listener = new AnonymousUpdateListener<MockPayload>( Callback );
-
-        store.Bind( MockEventType.Hello, listener );
-        Assert.Throws<InvalidOperationException>( () => store.Bind( MockEventType.Hello, listener ) );
-    }
-
-    [Test]
-    public void Funcを用いて匿名リスナーを多重バインドしたはスローされない()
-    {
-        var dispatcher = new Dispatcher();
-        var store = new MockStore( dispatcher );
-
-        async Task Callback( MockPayload _ )
-            => await Task.CompletedTask;
-
-        store.Bind( MockEventType.Hello, Callback );
-        Assert.DoesNotThrow( () => store.Bind( MockEventType.Hello, Callback ) );
+        store.Bind( MockEventType.Hello, callback );
+        Assert.Throws<InvalidOperationException>( () => store.Bind( MockEventType.Hello, callback ) );
     }
 
     #region Store のモック実装
@@ -128,27 +111,25 @@ public class StoreTest
         public string Message { get; } = message;
     }
 
-    private class MockStore :
-        IDisposable,
-        IStoreBinder<MockEventType, MockPayload>
+    private class MockStore : IDisposable, IStoreBinder
     {
         private IDisposable? dispatcherToken;
-        private readonly StoreBinder<MockEventType, MockPayload> storeBinder = new();
+        private readonly StoreBinder storeBinder = new();
 
         public MockStore( IDispatcher dispatcher )
         {
             dispatcherToken = dispatcher.AddHandler<MockAction>( async action => await HandleAsync( action ) );
         }
 
-        public async Task HandleAsync( MockAction action )
+        private async Task HandleAsync( MockAction action )
         {
             try
             {
                 var tasks = new List<Task>();
 
-                foreach( var listener in storeBinder.ListenersOf( action.Type ) )
+                foreach( var listener in storeBinder.ListenersOf<MockEventType, MockPayload>( action.Type ) )
                 {
-                    tasks.Add( listener.OnValueUpdatedAsync( action.Payload ) );
+                    tasks.Add( listener( action.Payload ) );
                 }
 
                 await Task.WhenAll( tasks );
@@ -159,11 +140,11 @@ public class StoreTest
             }
         }
 
-        public IDisposable Bind( MockEventType actionType, IStoreUpdateListener<MockPayload> listener )
-            => storeBinder.Bind( actionType, listener );
+        public IDisposable Bind<TActionType, TPayload>( TActionType actionType, Func<TPayload, Task> onUpdatedAsync )
+            => storeBinder.Bind( actionType, onUpdatedAsync );
 
-        public IEnumerable<IStoreUpdateListener<MockPayload>> ListenersOf( MockEventType actionType )
-            => storeBinder.ListenersOf( actionType );
+        public IEnumerable<Func<TPayload, Task>> ListenersOf<TActionType, TPayload>( TActionType actionType )
+            => storeBinder.ListenersOf<TActionType, TPayload>( actionType );
 
         public void Dispose()
         {
