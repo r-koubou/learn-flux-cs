@@ -1,5 +1,4 @@
 using System;
-using System.Collections.Generic;
 using System.Threading.Tasks;
 
 using LearnFlux.Flux.Actions;
@@ -32,6 +31,7 @@ public class StoreTest
             {
                 helloReceived = true;
                 Assert.AreEqual( hello.Message, payload.Message );
+                Assert.AreEqual( hello.Message, store.Message );
                 await Task.CompletedTask;
             }
         );
@@ -40,6 +40,7 @@ public class StoreTest
             {
                 goodbyeReceived = true;
                 Assert.AreEqual( goodbye.Message, payload.Message );
+                Assert.AreEqual( goodbye.Message, store.Message );
                 await Task.CompletedTask;
             }
         );
@@ -69,6 +70,7 @@ public class StoreTest
             {
                 helloReceived = true;
                 Assert.AreEqual( hello.Message, payload.Message );
+                Assert.AreEqual( hello.Message, store.Message );
                 await Task.CompletedTask;
             }
         );
@@ -111,40 +113,22 @@ public class StoreTest
         public string Message { get; } = message;
     }
 
-    private class MockStore : IDisposable, IStoreBinder
+    private class MockStore : Store, IDisposable
     {
         private IDisposable? dispatcherToken;
-        private readonly StoreBinder storeBinder = new();
+        private string message = string.Empty;
 
-        public MockStore( IDispatcher dispatcher )
+        public string Message => message;
+
+        public MockStore( IDispatcher dispatcher ) : base( dispatcher )
         {
-            dispatcherToken = dispatcher.Register<MockAction>( async action => await UpdateAsync( action ) );
-        }
-
-        private async Task UpdateAsync( MockAction action )
-        {
-            try
-            {
-                var tasks = new List<Task>();
-
-                foreach( var listener in storeBinder.CallbacksOf<MockEventType, MockPayload>( action.Type ) )
+            dispatcherToken = dispatcher.Register<MockAction>( async action =>
                 {
-                    tasks.Add( listener( action.Payload ) );
+                    message = action.Payload.Message;
+                    await EmitAsync( action.Type, action.Payload );
                 }
-
-                await Task.WhenAll( tasks );
-            }
-            catch
-            {
-                // ignored
-            }
+            );
         }
-
-        public IDisposable Bind<TActionType, TPayload>( TActionType actionType, Func<TPayload, Task> callback )
-            => storeBinder.Bind( actionType, callback );
-
-        public IEnumerable<Func<TPayload, Task>> CallbacksOf<TActionType, TPayload>( TActionType actionType )
-            => storeBinder.CallbacksOf<TActionType, TPayload>( actionType );
 
         public void Dispose()
         {
