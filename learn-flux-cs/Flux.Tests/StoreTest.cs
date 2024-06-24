@@ -111,40 +111,14 @@ public class StoreTest
         public string Message { get; } = message;
     }
 
-    private class MockStore : IDisposable, IStoreBinder
+    private class MockStore : Store, IDisposable
     {
         private IDisposable? dispatcherToken;
-        private readonly StoreBinder storeBinder = new();
 
-        public MockStore( IDispatcher dispatcher )
+        public MockStore( IDispatcher dispatcher ) : base( dispatcher )
         {
-            dispatcherToken = dispatcher.Register<MockAction>( async action => await UpdateAsync( action ) );
+            dispatcherToken = dispatcher.Register<MockAction>( async action => await UpdateAsync( action.Type, action.Payload ) );
         }
-
-        private async Task UpdateAsync( MockAction action )
-        {
-            try
-            {
-                var tasks = new List<Task>();
-
-                foreach( var listener in storeBinder.CallbacksOf<MockEventType, MockPayload>( action.Type ) )
-                {
-                    tasks.Add( listener( action.Payload ) );
-                }
-
-                await Task.WhenAll( tasks );
-            }
-            catch
-            {
-                // ignored
-            }
-        }
-
-        public IDisposable Bind<TActionType, TPayload>( TActionType actionType, Func<TPayload, Task> callback )
-            => storeBinder.Bind( actionType, callback );
-
-        public IEnumerable<Func<TPayload, Task>> CallbacksOf<TActionType, TPayload>( TActionType actionType )
-            => storeBinder.CallbacksOf<TActionType, TPayload>( actionType );
 
         public void Dispose()
         {
