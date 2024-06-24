@@ -43,11 +43,11 @@ public sealed class StoreBinder : IStoreBinder
     {
         _ = actionType ?? throw new ArgumentNullException( nameof( actionType ) );
 
-        if( bindings.TryGetValue( actionType, out var listeners ) )
+        if( bindings.TryGetValue( actionType, out var callback ) )
         {
             var result = new List<Func<TPayload, Task>>();
 
-            foreach( var x in listeners )
+            foreach( var x in callback )
             {
                 result.Add( (Func<TPayload, Task>)x );
             }
@@ -68,9 +68,9 @@ public sealed class StoreBinder : IStoreBinder
             _ = actionType ?? throw new InvalidOperationException( $"{nameof(actionType)} is null" );
 
             var bindings = binder.bindings;
-            if( bindings.TryGetValue( actionType, out var listeners ) )
+            if( bindings.TryGetValue( actionType, out var callbacks ) )
             {
-                listeners.Remove( callback );
+                callbacks.Remove( callback );
             }
         }
     }
