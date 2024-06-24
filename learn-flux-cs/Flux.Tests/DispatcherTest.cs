@@ -10,11 +10,6 @@ namespace FluxLearn.FLux.Test;
 [TestFixture]
 public class DispatcherTest
 {
-    private enum ActionType
-    {
-        Hello
-    }
-
     [Test]
     public async Task DispatcherからPayloadを受信できる()
     {
@@ -23,9 +18,9 @@ public class DispatcherTest
         const string payload = "Hello, world!";
         var receivedPayload = "";
 
-        var action = new FluxAction<ActionType, string>( ActionType.Hello, payload );
+        var action = new MockAction( MockActionType.Hello, payload );
 
-        var token = dispatcher.AddHandler<FluxAction<ActionType, string>>( async a =>
+        var token = dispatcher.AddHandler<MockAction>( async a =>
             {
                 receivedPayload = a.Payload;
                 await Task.CompletedTask;
@@ -38,4 +33,12 @@ public class DispatcherTest
 
         token.Dispose();
     }
+
+    private enum MockActionType
+    {
+        Hello
+    }
+
+    private class MockAction( MockActionType type, string payload )
+        : FluxAction<MockActionType, string>( type, payload );
 }
