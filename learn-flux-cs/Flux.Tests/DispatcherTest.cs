@@ -2,7 +2,6 @@ using System.Threading.Tasks;
 
 using LearnFlux.Flux.Actions;
 using LearnFlux.Flux.Dispatchers;
-using LearnFlux.Flux.Dispatchers.Extensions;
 
 using NUnit.Framework;
 
@@ -11,22 +10,17 @@ namespace FluxLearn.FLux.Test;
 [TestFixture]
 public class DispatcherTest
 {
-    private enum ActionType
-    {
-        Hello
-    }
-
     [Test]
     public async Task DispatcherからPayloadを受信できる()
     {
-        var dispatcher = new Dispatcher<FluxAction<ActionType, string>>();
+        var dispatcher = new Dispatcher();
 
         const string payload = "Hello, world!";
         var receivedPayload = "";
 
-        var action = new FluxAction<ActionType, string>( ActionType.Hello, payload );
+        var action = new MockAction( MockActionType.Hello, payload );
 
-        var token = dispatcher.AddHandler( async a =>
+        var token = dispatcher.AddHandler<MockAction>( async a =>
             {
                 receivedPayload = a.Payload;
                 await Task.CompletedTask;
@@ -39,4 +33,12 @@ public class DispatcherTest
 
         token.Dispose();
     }
+
+    private enum MockActionType
+    {
+        Hello
+    }
+
+    private class MockAction( MockActionType type, string payload )
+        : FluxAction<MockActionType, string>( type, payload );
 }

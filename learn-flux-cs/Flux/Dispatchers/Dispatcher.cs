@@ -9,17 +9,17 @@ namespace LearnFlux.Flux.Dispatchers;
 /// <summary>
 /// 既定の Dispatcher 実装
 /// </summary>
-public class Dispatcher<TAction> : IDispatcher<TAction> where TAction : IFluxAction
+public class Dispatcher : IDispatcher
 {
-    private readonly Dictionary<Guid, IDispatchHandler<TAction>> handlers = new();
+    private readonly Dictionary<Guid, object> handlers = new();
 
     ///
     /// <inheritdoc />
     ///
-    public IDisposable AddHandler( IDispatchHandler<TAction> handler )
+    public IDisposable AddHandler<TAction>( Func<TAction, Task> handle ) where TAction : IFluxAction
     {
         var id = Guid.NewGuid();
-        handlers.Add( id, handler );
+        handlers.Add( id, handle );
 
         return new HandlerToken( this, id );
     }
@@ -27,21 +27,21 @@ public class Dispatcher<TAction> : IDispatcher<TAction> where TAction : IFluxAct
     ///
     /// <inheritdoc />
     ///
-    public async Task DispatchAsync( TAction action )
+    public async Task DispatchAsync<TAction>( TAction action ) where TAction : IFluxAction
     {
         var tasks = new List<Task>();
 
         foreach( var callback in handlers.Values )
         {
-            tasks.Add( callback.HandleAsync( action ) );
+            tasks.Add( ((Func<TAction, Task>)callback).Invoke( action ) );
         }
 
         await Task.WhenAll( tasks );
     }
 
-    private class HandlerToken( Dispatcher<TAction> dispatcher, Guid id ) : IDisposable
+    private class HandlerToken( Dispatcher dispatcher, Guid id ) : IDisposable
     {
-        private readonly Dispatcher<TAction> dispatcher = dispatcher;
+        private readonly Dispatcher dispatcher = dispatcher;
         private readonly Guid id = id;
 
         public void Dispose()
