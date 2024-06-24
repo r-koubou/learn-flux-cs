@@ -2,7 +2,6 @@ using System.Threading.Tasks;
 
 using LearnFlux.Flux.Actions;
 using LearnFlux.Flux.Dispatchers;
-using LearnFlux.Flux.Dispatchers.Extensions;
 
 using NUnit.Framework;
 
@@ -19,14 +18,14 @@ public class DispatcherTest
     [Test]
     public async Task DispatcherからPayloadを受信できる()
     {
-        var dispatcher = new Dispatcher<FluxAction<ActionType, string>>();
+        var dispatcher = new Dispatcher();
 
         const string payload = "Hello, world!";
         var receivedPayload = "";
 
         var action = new FluxAction<ActionType, string>( ActionType.Hello, payload );
 
-        var token = dispatcher.AddHandler( async a =>
+        var token = dispatcher.AddHandler<FluxAction<ActionType, string>>( async a =>
             {
                 receivedPayload = a.Payload;
                 await Task.CompletedTask;

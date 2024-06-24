@@ -8,23 +8,23 @@ namespace LearnFlux.Flux.Dispatchers;
 /// <summary>
 /// Dispatcher を表現するインターフェース
 /// </summary>
-public interface IDispatcher<TAction> where TAction : IFluxAction
+public interface IDispatcher
 {
     /// <summary>
     /// ディスパッチを受け取るハンドラを追加する
     /// </summary>
     /// <returns>ハンドラ登録解除用のトークン</returns>
-    IDisposable AddHandler( IDispatchHandler<TAction> handler );
+    IDisposable AddHandler<TAction>( Func<TAction, Task> handle ) where TAction : IFluxAction;
 
     /// <summary>
     /// ディスパッチを行う
     /// </summary>
-    /// <remarks>既定では<see cref="DispatchAsync"/> をブロッキングして実行する</remarks>
-    void Dispatch( TAction action )
+    /// <remarks>既定では<see cref="DispatchAsync{TAction}"/> をブロッキングして実行する</remarks>
+    void Dispatch<TAction>( TAction action ) where TAction : IFluxAction
         => DispatchAsync( action ).GetAwaiter().GetResult();
 
     /// <summary>
     /// ディスパッチを行う
     /// </summary>
-    Task DispatchAsync( TAction action );
+    Task DispatchAsync<TAction>( TAction action ) where TAction : IFluxAction;
 }

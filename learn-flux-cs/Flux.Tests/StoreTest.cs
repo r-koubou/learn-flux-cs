@@ -4,7 +4,6 @@ using System.Threading.Tasks;
 
 using LearnFlux.Flux.Actions;
 using LearnFlux.Flux.Dispatchers;
-using LearnFlux.Flux.Dispatchers.Extensions;
 using LearnFlux.Flux.Stores;
 using LearnFlux.Flux.Stores.Extensions;
 
@@ -18,7 +17,7 @@ public class StoreTest
     [Test]
     public async Task バインドしてDispatcherからペイロードを受信できる()
     {
-        var dispatcher = new Dispatcher<MockAction>();
+        var dispatcher = new Dispatcher();
         var store = new MockStore( dispatcher );
 
         var hello = new MockPayload( "Hello, world!" );
@@ -59,7 +58,7 @@ public class StoreTest
     [Test]
     public async Task バインドを解除してDispatcherからペイロードを受信できない()
     {
-        var dispatcher = new Dispatcher<MockAction>();
+        var dispatcher = new Dispatcher();
         var store = new MockStore( dispatcher );
 
         var hello = new MockPayload( "Hello, world!" );
@@ -88,7 +87,7 @@ public class StoreTest
     [Test]
     public void 同じ参照のリスナーを多重バインドしようとしたら例外がスローされる()
     {
-        var dispatcher = new Dispatcher<MockAction>();
+        var dispatcher = new Dispatcher();
         var store = new MockStore( dispatcher );
 
         async Task Callback( MockPayload _ )
@@ -103,7 +102,7 @@ public class StoreTest
     [Test]
     public void Funcを用いて匿名リスナーを多重バインドしたはスローされない()
     {
-        var dispatcher = new Dispatcher<MockAction>();
+        var dispatcher = new Dispatcher();
         var store = new MockStore( dispatcher );
 
         async Task Callback( MockPayload _ )
@@ -131,15 +130,14 @@ public class StoreTest
 
     private class MockStore :
         IDisposable,
-        IDispatchHandler<MockAction>,
         IStoreBinder<MockEventType, MockPayload>
     {
         private IDisposable? dispatcherToken;
         private readonly StoreBinder<MockEventType, MockPayload> storeBinder = new();
 
-        public MockStore( IDispatcher<MockAction> dispatcher )
+        public MockStore( IDispatcher dispatcher )
         {
-            dispatcherToken = dispatcher.AddHandler( async action => await HandleAsync( action ) );
+            dispatcherToken = dispatcher.AddHandler<MockAction>( async action => await HandleAsync( action ) );
         }
 
         public async Task HandleAsync( MockAction action )
