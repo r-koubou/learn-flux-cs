@@ -31,7 +31,6 @@ public class StoreTest
             {
                 helloReceived = true;
                 Assert.AreEqual( hello.Message, payload.Message );
-                Assert.AreEqual( hello.Message, store.Message );
                 await Task.CompletedTask;
             }
         );
@@ -40,16 +39,17 @@ public class StoreTest
             {
                 goodbyeReceived = true;
                 Assert.AreEqual( goodbye.Message, payload.Message );
-                Assert.AreEqual( goodbye.Message, store.Message );
                 await Task.CompletedTask;
             }
         );
 
         await dispatcher.DispatchAsync( helloAction );
         Assert.IsTrue( helloReceived );
+        Assert.AreEqual( hello.Message, store.Message );
 
         await dispatcher.DispatchAsync( goodbyeAction );
         Assert.IsTrue( goodbyeReceived );
+        Assert.AreEqual( goodbye.Message, store.Message );
 
         helloToken.Dispose();
         goodByeToken.Dispose();
@@ -70,13 +70,13 @@ public class StoreTest
             {
                 helloReceived = true;
                 Assert.AreEqual( hello.Message, payload.Message );
-                Assert.AreEqual( hello.Message, store.Message );
                 await Task.CompletedTask;
             }
         );
 
         await dispatcher.DispatchAsync( helloAction );
         Assert.IsTrue( helloReceived );
+        Assert.AreEqual( hello.Message, store.Message );
 
         helloToken.Dispose();
         helloReceived = false;
