@@ -118,16 +118,16 @@ public class StoreTest
 
         public MockStore( IDispatcher dispatcher )
         {
-            dispatcherToken = dispatcher.AddHandler<MockAction>( async action => await HandleAsync( action ) );
+            dispatcherToken = dispatcher.Register<MockAction>( async action => await UpdateAsync( action ) );
         }
 
-        private async Task HandleAsync( MockAction action )
+        private async Task UpdateAsync( MockAction action )
         {
             try
             {
                 var tasks = new List<Task>();
 
-                foreach( var listener in storeBinder.ListenersOf<MockEventType, MockPayload>( action.Type ) )
+                foreach( var listener in storeBinder.CallbacksOf<MockEventType, MockPayload>( action.Type ) )
                 {
                     tasks.Add( listener( action.Payload ) );
                 }
@@ -140,11 +140,11 @@ public class StoreTest
             }
         }
 
-        public IDisposable Bind<TActionType, TPayload>( TActionType actionType, Func<TPayload, Task> onUpdatedAsync )
-            => storeBinder.Bind( actionType, onUpdatedAsync );
+        public IDisposable Bind<TActionType, TPayload>( TActionType actionType, Func<TPayload, Task> callback )
+            => storeBinder.Bind( actionType, callback );
 
-        public IEnumerable<Func<TPayload, Task>> ListenersOf<TActionType, TPayload>( TActionType actionType )
-            => storeBinder.ListenersOf<TActionType, TPayload>( actionType );
+        public IEnumerable<Func<TPayload, Task>> CallbacksOf<TActionType, TPayload>( TActionType actionType )
+            => storeBinder.CallbacksOf<TActionType, TPayload>( actionType );
 
         public void Dispose()
         {
