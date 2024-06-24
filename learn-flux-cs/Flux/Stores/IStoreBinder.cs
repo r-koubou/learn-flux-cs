@@ -15,7 +15,7 @@ public interface IStoreBinder
     /// <typeparam name="TActionType">通知を識別するためのキーの型</typeparam>
     /// <typeparam name="TPayload">通知の内容の型</typeparam>
     /// <returns>登録解除用のトークン</returns>
-    IDisposable Bind<TActionType, TPayload>( TActionType actionType, Func<TPayload, Task> onUpdatedAsync );
+    IDisposable Bind<TActionType, TPayload>( TActionType actionType, Func<TPayload, Task> callback );
 
     /// <summary>
     /// actionType に対応する現在の通知先のリストを取得する
@@ -23,5 +23,5 @@ public interface IStoreBinder
     /// <typeparam name="TActionType">通知を識別するためのキーの型</typeparam>
     /// <typeparam name="TPayload">通知の内容の型</typeparam>
     /// <returns>通知先のリスト、何も登録されていない場合は空のリスト</returns>
-    IEnumerable<Func<TPayload, Task>> ListenersOf<TActionType, TPayload>( TActionType actionType );
+    IEnumerable<Func<TPayload, Task>> CallbacksOf<TActionType, TPayload>( TActionType actionType );
 }

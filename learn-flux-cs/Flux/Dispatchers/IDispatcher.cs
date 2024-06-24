@@ -14,7 +14,7 @@ public interface IDispatcher
     /// ディスパッチを受け取るハンドラを追加する
     /// </summary>
     /// <returns>ハンドラ登録解除用のトークン</returns>
-    IDisposable AddHandler<TAction>( Func<TAction, Task> handle ) where TAction : IFluxAction;
+    IDisposable Register<TAction>( Func<TAction, Task> callback ) where TAction : IFluxAction;
 
     /// <summary>
     /// ディスパッチを行う

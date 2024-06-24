@@ -11,15 +11,15 @@ namespace LearnFlux.Flux.Dispatchers;
 /// </summary>
 public class Dispatcher : IDispatcher
 {
-    private readonly Dictionary<Guid, object> handlers = new();
+    private readonly Dictionary<Guid, object> callbacks = new();
 
     ///
     /// <inheritdoc />
     ///
-    public IDisposable AddHandler<TAction>( Func<TAction, Task> handle ) where TAction : IFluxAction
+    public IDisposable Register<TAction>( Func<TAction, Task> callback ) where TAction : IFluxAction
     {
         var id = Guid.NewGuid();
-        handlers.Add( id, handle );
+        callbacks.Add( id, callback );
 
         return new HandlerToken( this, id );
     }
@@ -31,7 +31,7 @@ public class Dispatcher : IDispatcher
     {
         var tasks = new List<Task>();
 
-        foreach( var callback in handlers.Values )
+        foreach( var callback in callbacks.Values )
         {
             tasks.Add( ((Func<TAction, Task>)callback).Invoke( action ) );
         }
@@ -46,7 +46,7 @@ public class Dispatcher : IDispatcher
 
         public void Dispose()
         {
-            dispatcher.handlers.Remove( id );
+            dispatcher.callbacks.Remove( id );
         }
     }
 }

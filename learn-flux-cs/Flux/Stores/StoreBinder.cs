@@ -15,31 +15,31 @@ public sealed class StoreBinder : IStoreBinder
     ///
     /// <inheritdoc />
     ///
-    public IDisposable Bind<TActionType, TPayload>( TActionType actionType, Func<TPayload, Task> onUpdatedAsync )
+    public IDisposable Bind<TActionType, TPayload>( TActionType actionType, Func<TPayload, Task> callback )
     {
         _ = actionType ?? throw new ArgumentNullException( nameof( actionType ) );
-        _ = onUpdatedAsync ?? throw new ArgumentNullException( nameof( onUpdatedAsync ) );
+        _ = callback ?? throw new ArgumentNullException( nameof( callback ) );
 
-        if( !bindings.TryGetValue( actionType, out var listeners ) )
+        if( !bindings.TryGetValue( actionType, out var callbacks ) )
         {
-            listeners       = [];
-            bindings[ actionType ] = listeners;
+            callbacks              = [];
+            bindings[ actionType ] = callbacks;
         }
 
-        if( listeners.Contains( onUpdatedAsync ) )
+        if( callbacks.Contains( callback ) )
         {
             throw new InvalidOperationException( $"{actionType} is already bound" );
         }
 
-        listeners.Add( onUpdatedAsync );
+        callbacks.Add( callback );
 
-        return new BindToken( this, actionType, onUpdatedAsync );
+        return new BindToken( this, actionType, callback );
     }
 
     ///
     /// <inheritdoc />
     ///
-    public IEnumerable<Func<TPayload, Task>> ListenersOf<TActionType, TPayload>( TActionType actionType )
+    public IEnumerable<Func<TPayload, Task>> CallbacksOf<TActionType, TPayload>( TActionType actionType )
     {
         _ = actionType ?? throw new ArgumentNullException( nameof( actionType ) );
 

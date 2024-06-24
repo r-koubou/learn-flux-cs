@@ -20,7 +20,7 @@ public class DispatcherTest
 
         var action = new MockAction( MockActionType.Hello, payload );
 
-        var token = dispatcher.AddHandler<MockAction>( async a =>
+        var token = dispatcher.Register<MockAction>( async a =>
             {
                 receivedPayload = a.Payload;
                 await Task.CompletedTask;
