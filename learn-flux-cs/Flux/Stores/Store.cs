@@ -7,24 +7,23 @@ using LearnFlux.Flux.Dispatchers;
 namespace LearnFlux.Flux.Stores;
 
 /// <summary>
-/// Store を表現するデフォルト実装
+/// <see cref="IStore"/>のデフォルト実装
 /// </summary>
-public abstract class Store : IStoreBinder
+public abstract class Store( IDispatcher dispatcher ) : IStore
 {
-    protected readonly IDispatcher dispatcher;
-    protected readonly StoreBinder storeBinder = new();
-    protected Store( IDispatcher dispatcher )
-    {
-        this.dispatcher = dispatcher;
-    }
+    protected readonly IDispatcher dispatcher = dispatcher;
+    private readonly StoreBinder storeBinder = new();
 
-    protected async Task UpdateAsync<TActionType, TPayload>( TActionType type, TPayload payload )
+    ///
+    /// <inheritdoc />
+    ///
+    public async Task EmitAsync<TActionType, TPayload>( TActionType type, TPayload payload )
     {
         try
         {
             var tasks = new List<Task>();
 
-            foreach( var callback in storeBinder.CallbacksOf<TActionType, TPayload>( type ) )
+            foreach( var callback in CallbacksOf<TActionType, TPayload>( type ) )
             {
                 tasks.Add( callback( payload ) );
             }
@@ -40,7 +39,7 @@ public abstract class Store : IStoreBinder
     ///
     /// <inheritdoc />
     ///
-    public IDisposable Bind<TActionType, TPayload>( TActionType actionType, Func<TPayload, Task> callback )
+    public virtual IDisposable Bind<TActionType, TPayload>( TActionType actionType, Func<TPayload, Task> callback )
         => storeBinder.Bind( actionType, callback );
 
     ///

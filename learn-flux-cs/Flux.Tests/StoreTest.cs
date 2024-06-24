@@ -31,6 +31,7 @@ public class StoreTest
             {
                 helloReceived = true;
                 Assert.AreEqual( hello.Message, payload.Message );
+                Assert.AreEqual( hello.Message, store.Message );
                 await Task.CompletedTask;
             }
         );
@@ -39,6 +40,7 @@ public class StoreTest
             {
                 goodbyeReceived = true;
                 Assert.AreEqual( goodbye.Message, payload.Message );
+                Assert.AreEqual( goodbye.Message, store.Message );
                 await Task.CompletedTask;
             }
         );
@@ -68,6 +70,7 @@ public class StoreTest
             {
                 helloReceived = true;
                 Assert.AreEqual( hello.Message, payload.Message );
+                Assert.AreEqual( hello.Message, store.Message );
                 await Task.CompletedTask;
             }
         );
@@ -113,10 +116,18 @@ public class StoreTest
     private class MockStore : Store, IDisposable
     {
         private IDisposable? dispatcherToken;
+        private string message = string.Empty;
+
+        public string Message => message;
 
         public MockStore( IDispatcher dispatcher ) : base( dispatcher )
         {
-            dispatcherToken = dispatcher.Register<MockAction>( async action => await UpdateAsync( action.Type, action.Payload ) );
+            dispatcherToken = dispatcher.Register<MockAction>( async action =>
+                {
+                    message = action.Payload.Message;
+                    await EmitAsync( action.Type, action.Payload );
+                }
+            );
         }
 
         public void Dispose()

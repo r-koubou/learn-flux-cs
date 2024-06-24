@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 namespace LearnFlux.Flux.Stores;
 
 /// <summary>
-/// Store の更新通知を管理する
+/// Store の更新イベントの登録を管理する
 /// </summary>
 public interface IStoreBinder
 {
