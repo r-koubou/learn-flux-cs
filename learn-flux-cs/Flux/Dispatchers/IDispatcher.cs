@@ -34,14 +34,28 @@ public interface IDispatcher
     /// </summary>
     Task DispatchAsync<TAction>( TAction action ) where TAction : IFluxAction;
 
-    void WaitFor( IDisposable tokens )
-        => WaitForAsync( tokens ).GetAwaiter().GetResult();
-
-    async Task WaitForAsync( IDisposable tokens )
-        => await WaitForAsync( [ tokens ] );
-
+    /// <summary>
+    /// 現在のコールバックの実行を継続する前に、指定されたコールバックが呼び出されるのを待つ。
+    /// </summary>
+    /// <remarks>既定では<see cref="WaitForAsync(System.Collections.Generic.IEnumerable{System.IDisposable})"/> をブロッキングして実行する</remarks>
     void WaitFor( IEnumerable<IDisposable> tokens )
         => WaitForAsync( tokens ).GetAwaiter().GetResult();
 
+    /// <summary>
+    /// 現在のコールバックの実行を継続する前に、指定されたコールバックが呼び出されるのを待つ。
+    /// </summary>
     Task WaitForAsync( IEnumerable<IDisposable> tokens );
+
+    /// <summary>
+    /// 現在のコールバックの実行を継続する前に、指定されたコールバックが呼び出されるのを待つ。
+    /// </summary>
+    /// <remarks>既定では<see cref="WaitForAsync(System.IDisposable)"/> をブロッキングして実行する</remarks>
+    void WaitFor( IDisposable token )
+        => WaitForAsync( token ).GetAwaiter().GetResult();
+
+    /// <summary>
+    /// 現在のコールバックの実行を継続する前に、指定されたコールバックが呼び出されるのを待つ。
+    /// </summary>
+    async Task WaitForAsync( IDisposable token )
+     => await WaitForAsync( new[] { token } );
 }
