@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 
 using LearnFlux.Flux.Actions;
@@ -10,6 +11,11 @@ namespace LearnFlux.Flux.Dispatchers;
 /// </summary>
 public interface IDispatcher
 {
+    /// <summary>
+    /// ディパッチ実行中かどうか
+    /// </summary>
+    public bool Dispatching { get; }
+
     /// <summary>
     /// ディスパッチを受け取るハンドラを追加する
     /// </summary>
@@ -27,4 +33,15 @@ public interface IDispatcher
     /// ディスパッチを行う
     /// </summary>
     Task DispatchAsync<TAction>( TAction action ) where TAction : IFluxAction;
+
+    void WaitFor( IDisposable tokens )
+        => WaitForAsync( tokens ).GetAwaiter().GetResult();
+
+    async Task WaitForAsync( IDisposable tokens )
+        => await WaitForAsync( [ tokens ] );
+
+    void WaitFor( IEnumerable<IDisposable> tokens )
+        => WaitForAsync( tokens ).GetAwaiter().GetResult();
+
+    Task WaitForAsync( IEnumerable<IDisposable> tokens );
 }

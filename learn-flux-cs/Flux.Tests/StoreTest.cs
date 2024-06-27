@@ -58,7 +58,7 @@ public class StoreTest
     [Test]
     public async Task バインドを解除してDispatcherからペイロードを受信できない()
     {
-        var dispatcher = new Dispatcher();
+        IDispatcher dispatcher = new Dispatcher();
         var store = new MockStore( dispatcher );
 
         var hello = new MockPayload( "Hello, world!" );
