@@ -12,17 +12,11 @@ namespace FluxLearn.FLux.Test;
 [TestFixture]
 public class DispatcherTest
 {
-    private Dispatcher dispatcher;
-
-    [SetUp]
-    public void Setup()
-    {
-        dispatcher = new Dispatcher();
-    }
-
     [Test]
     public async Task DispatcherからPayloadを受信できる()
     {
+        var dispatcher = new Dispatcher();
+
         const string payload = "Hello, world!";
         var receivedPayload = "";
 
@@ -45,6 +39,7 @@ public class DispatcherTest
     [Test]
     public async Task WaitForで順序の制御ができる()
     {
+        var dispatcher = new Dispatcher();
         var log = new List<string>();
 
         var token1 = dispatcher.Register<MockAction>( async action =>
@@ -74,6 +69,7 @@ public class DispatcherTest
     [Test]
     public void ディスパッチ処理中にディスパッチを行おうとすると例外がスローされる()
     {
+        var dispatcher = new Dispatcher();
         var log = new List<string>();
 
         _ = dispatcher.Register<MockAction>( async action =>
@@ -96,6 +92,7 @@ public class DispatcherTest
     [Test]
     public void ディスパッチ処理外でWaitForを実行すると例外がスローされる()
     {
+        var dispatcher = new Dispatcher();
         var log = new List<string>();
 
         var token = dispatcher.Register<MockAction>( async action =>
@@ -110,6 +107,8 @@ public class DispatcherTest
                 await dispatcher.WaitForAsync( new[] { token } );
             }
         );
+
+        Assert.IsEmpty( log );
     }
 
     private enum MockActionType
